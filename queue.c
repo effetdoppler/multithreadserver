@@ -19,7 +19,7 @@ queue* queue_pop(queue* start, int *pval)
     {
         if (start->next)
         {
-            if (*start->next->val == pval)
+            if (start->next->val == pval)
             {
                 start->next = start->next->next; 
                 break;
@@ -32,5 +32,10 @@ queue* queue_pop(queue* start, int *pval)
 
 void queue_empty(queue** pstart)
 {
-    // TODO
+    struct queue start = **pstart;
+    while(start.next)
+    {
+        start.next = start.next->next;
+    }
+    pstart = NULL;
 }
