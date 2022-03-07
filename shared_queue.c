@@ -4,7 +4,8 @@
 
 shared_queue* shared_queue_new()
 {
-    // TODO
+    struct shared_queue *sq = malloc(sizeof(struct shared_queue));
+    return sq;
 }
 
 void shared_queue_push(shared_queue* sq, int val)
