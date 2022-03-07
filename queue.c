@@ -5,6 +5,12 @@
 queue* queue_push(queue* start, int val)
 {
     // TODO
+    while(start->next)
+    {
+        start = start->next;
+    }
+    start->next = val;
+
 }
 
 queue* queue_pop(queue* start, int *pval)
