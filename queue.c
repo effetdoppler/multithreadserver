@@ -4,18 +4,30 @@
 
 queue* queue_push(queue* start, int val)
 {
-    // TODO
     while(start->next)
     {
         start = start->next;
     }
     start->next = val;
+    return start;
 
 }
 
 queue* queue_pop(queue* start, int *pval)
 {
-    // TODO
+    while(start->next)
+    {
+        if (start->next)
+        {
+            if (start->next->val == pval)
+            {
+                start->next = start->next->next; 
+                break;
+            }
+        }
+        start = start->next;
+    }
+    return start;
 }
 
 void queue_empty(queue** pstart)
