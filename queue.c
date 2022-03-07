@@ -8,7 +8,7 @@ queue* queue_push(queue* start, int val)
     {
         start = start->next;
     }
-    start->next = val;
+    start->next->val = val;
     return start;
 
 }
@@ -19,7 +19,7 @@ queue* queue_pop(queue* start, int *pval)
     {
         if (start->next)
         {
-            if (start->next->val == pval)
+            if (*start->next->val == pval)
             {
                 start->next = start->next->next; 
                 break;
