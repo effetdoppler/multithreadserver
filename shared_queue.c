@@ -10,7 +10,12 @@ shared_queue* shared_queue_new()
 
 void shared_queue_push(shared_queue* sq, int val)
 {
-    // TODO
+    while(sq->queue->next)
+    {
+        sq->queue = sq->queue->next;
+    }
+    sq->queue->next->val = val;
+    sq->
 }
 
 int shared_queue_pop(shared_queue* sq)
