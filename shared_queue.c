@@ -10,20 +10,24 @@ shared_queue* shared_queue_new()
 
 void shared_queue_push(shared_queue* sq, int val)
 {
-    while(sq->queue->next)
-    {
-        sq->queue = sq->queue->next;
-    }
-    sq->queue->next->val = val;
-    sq->
+    sq->lock = 0;
+    sq->size++;
+    queue_push(sq->queue, val);
+    sq->lock = 1;
 }
 
 int shared_queue_pop(shared_queue* sq)
 {
-    // TODO
+    sq->lock = 0;
+    queue_pop(sq->queue, sq->size-1);
+    sq->size++;
+    sq->lock = 1;
 }
 
 void shared_queue_destroy(shared_queue* sq)
 {
-    // TODO
+    queue_empty(sq->queue);
+    sq->size = 0;
+    sq->lock = 1;
+    free(sq);
 }
