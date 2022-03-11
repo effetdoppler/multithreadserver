@@ -4,38 +4,45 @@
 
 queue* queue_push(queue* start, int val)
 {
-    while(start->next)
+    queue *q = malloc(sizeof(queue));
+    if (q == NULL)
+        errx(1, "Not enough memory!");
+    q->val = val;
+    if (!(start->next))
+        start->next = q;
+    else
     {
-        start = start->next;
+        while(start->next)
+        {
+            start = start->next;
+        }
+        start->next = q;
+    
     }
-    start->next->val = val;
-    return start;
-
+    return start->next;
 }
 
 queue* queue_pop(queue* start, int *pval)
 {
     while(start->next)
     {
-        if (start->next)
-        {
-            if (start->next->val == pval)
-            {
-                start->next = start->next->next; 
-                break;
-            }
-        }
         start = start->next;
     }
+    pval = start->val;
+    start = NULL;
+    free(start);
+    start--;
+    if (!start)
+        return NULL;
     return start;
 }
 
 void queue_empty(queue** pstart)
 {
     struct queue start = **pstart;
+    int *pval;
     while(start.next)
     {
-        start.next = start.next->next;
+        queue_pop(&start, pval);
     }
-    pstart = NULL;
 }
