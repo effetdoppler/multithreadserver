@@ -36,9 +36,9 @@ queue* queue_pop(queue* start, int *pval)
 
 void queue_empty(queue** pstart)
 {
-    struct queue start = **pstart;
+    queue start = **pstart;
     int *pval;
-    while(start.next)
+    while(&start)
     {
         queue_pop(&start, pval);
     }
