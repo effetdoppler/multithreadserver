@@ -8,13 +8,18 @@ queue* queue_push(queue* start, int val)
     if (q == NULL)
         errx(1, "Not enough memory!");
     q->val = val;
-    while(start->next)
+    if (start == NULL)
     {
-        start = start->next;
+        q->next = q;
     }
-    start->next = q;
+    else
+    {
+        q->next = start->next;
+        start->next = q;
+    }
+    
 
-    return &start->next;
+    return &q;
 }
 
 queue* queue_pop(queue* start, int *pval)
