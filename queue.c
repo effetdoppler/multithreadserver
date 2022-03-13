@@ -18,27 +18,28 @@ queue* queue_push(queue* start, int val)
         start->next = q;
     }
     
-    return &q;
+    return q;
 }
 
 queue* queue_pop(queue* start, int *pval)
 {
     queue* first = start;
     queue * q = start->next;
-    pval = q->val;
+    pval = &q->val;
     if (q->next != first)
         start->next = q->next;
     free(q);
     if (!start)
         return NULL;
-    return &start;
+    return start;
 }
 
 void queue_empty(queue** pstart)
 {
     queue start = **pstart;
-    int *pval;
-    while(&start)
+    int *pval = NULL;
+    queue_pop(&start, pval);
+    while(pval)
     {
         queue_pop(&start, pval);
     }
