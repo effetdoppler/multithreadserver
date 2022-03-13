@@ -60,7 +60,13 @@ void* worker(void* arg)
     // Gets the shared queue.
     shared_queue* queue = arg;
 
-    // TODO
+    while(1)
+    {
+        int res = shared_queue_pop(queue);
+        echo(res, res);
+        close(res);
+    }
+
 }
 
 int main()
