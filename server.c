@@ -72,7 +72,64 @@ void* worker(void* arg)
 int main()
 {
     // Creates the shared queue.
-    shared_queue* queue = shared_queue_new();
-
-    // TODO
+    shared_queue* queue = shared_queue_new();       
+    THREAD_COUNT;
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    struct addrinfo *result;
+    if (getaddrinfo(NULL, 2048, &hints, &result) != 0)
+        err(EXIT_FAILURE, "server_connection: getaddrinfo()");
+    struct addrinfo *rp;
+    int sfd;
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        //If an error occurs, continue with the next address.
+        if (sfd == -1)
+            continue;
+        int value = 1;
+        //set SO_REUSEADDR to 1
+        if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int))==-1)
+            err(EXIT_FAILURE, "server_connection: setsocketopt()");
+        // Try to bind the socket to the address
+        if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
+            break;
+        close(sfd);
+    }
+    //Free the linked list.
+    freeaddrinfo(result);
+    
+    if (rp == NULL) {               /* No address succeeded */
+        errx(EXIT_FAILURE, "Could not connect\n");
+    if (listen(sfd, 5) == -1)
+        err(EXIT_FAILURE, "main: listen()");
+    while(1)
+        {
+            //Print a message saying that your server is waiting for connections.
+            printf("Waiting for connections...\n");
+            int cfd;
+            struct sockaddr client_address;
+            socklen_t client_address_length = sizeof(struct sockaddr);
+            //Wait for connections by using the accept(2) function
+            cfd = accept(sfd, &client_address, &client_address_length);
+            if (cfd == -1)
+                err(EXIT_FAILURE, "main: accept()");
+            //Print any message showing that a connection is successful.
+            printf("Connection successful!\n");
+            shared_queue_push(queue, cfd);
+            pthread_t thr;
+            int e = pthread_create(&thr, NULL, worker, (void*)queue);
+            if (e!=0)
+            {
+                errx(EXIT_FAILURE, "pthread_create()");
+            }
+            
+        }
+        //Close sfd
+        close(sfd);
+        return 0;
+   
 }
