@@ -19,7 +19,7 @@ queue* queue_push(queue* start, int val)
         start->next = q;
     
     }
-    return start->next;
+    return &start->next;
 }
 
 queue* queue_pop(queue* start, int *pval)
