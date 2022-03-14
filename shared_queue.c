@@ -16,8 +16,8 @@ void shared_queue_push(shared_queue* sq, int val)
 {
     sem_wait(&sq->lock);
     sq->queue = queue_push(sq->queue, val);
-    sem_post(&sq->size); 
     sem_post(&sq->lock);
+    sem_post(&sq->size); 
 }
 
 int shared_queue_pop(shared_queue* sq)
@@ -32,8 +32,7 @@ int shared_queue_pop(shared_queue* sq)
 
 void shared_queue_destroy(shared_queue* sq)
 {
-    queue** que = &sq->queue;
-    queue_empty(que);
+    queue_empty(&sq->queue);
     sem_destroy(&sq->lock);
     sem_destroy(&sq->size);
     free(sq);

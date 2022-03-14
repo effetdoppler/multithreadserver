@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include "shared_queue.h"
 
 // Number of threads.
@@ -20,10 +21,10 @@ void rewrite(int fd, const void *buf, size_t count)
     ssize_t res = write(fd, buf, count);
     //If the return value of write() is smaller than its third argument, you must call write() a
     //gain in order to have the rest of the data written. Repeat this until all the data has been sent
-    if (res != count)
+    if (res != (ssize_t)count)
     {
-        char * buff  = buf;
-        while(res != count)
+        const char * buff  = buf;
+        while(res != (ssize_t)count)
         {
             // If an error occurs, exit the program with an error message
             if (res == -1)
@@ -58,29 +59,41 @@ void echo(int fd_in, int fd_out)
 void* worker(void* arg)
 {
     // Gets the shared queue.
-    shared_queue* queue = arg;
+    shared_queue* sq = arg;
 
     while(1)
     {
-        int res = shared_queue_pop(queue);
+        int res = shared_queue_pop(sq);
+        rewrite(res, "Connected.\n", 12);
         echo(res, res);
         close(res);
     }
-
 }
 
 int main()
 {
-    // Creates the shared queue.
-    shared_queue* queue = shared_queue_new();       
-    THREAD_COUNT;
+    // Creates the shared queue.  
+    shared_queue* queue = shared_queue_new();
+    // Creates all threads.
+    for (size_t i = 0; i < THREAD_COUNT; i++)
+    {
+        pthread_t threadId;
+        // Creates the thread.
+        int e = pthread_create(&threadId, NULL, worker, queue);
+        if (e != 0)
+        {
+            errno = e;
+            err(EXIT_FAILURE, "Could not create the thread %zu.", i);
+        }
+    }
+
     struct addrinfo hints;
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     struct addrinfo *result;
-    if (getaddrinfo(NULL, 2048, &hints, &result) != 0)
+    if (getaddrinfo(NULL, "2048", &hints, &result) != 0)
         err(EXIT_FAILURE, "server_connection: getaddrinfo()");
     struct addrinfo *rp;
     int sfd;
@@ -102,34 +115,30 @@ int main()
     //Free the linked list.
     freeaddrinfo(result);
     
-    if (rp == NULL) {               /* No address succeeded */
+    if (rp == NULL)              /* No address succeeded */
         errx(EXIT_FAILURE, "Could not connect\n");
     if (listen(sfd, 5) == -1)
         err(EXIT_FAILURE, "main: listen()");
+
+    //Print a message saying that your server is waiting for connections.
+    printf("Waiting for connections...\n");
     while(1)
-        {
-            //Print a message saying that your server is waiting for connections.
-            printf("Waiting for connections...\n");
-            int cfd;
-            struct sockaddr client_address;
-            socklen_t client_address_length = sizeof(struct sockaddr);
-            //Wait for connections by using the accept(2) function
-            cfd = accept(sfd, &client_address, &client_address_length);
-            if (cfd == -1)
-                err(EXIT_FAILURE, "main: accept()");
-            //Print any message showing that a connection is successful.
-            printf("Connection successful!\n");
-            shared_queue_push(queue, cfd);
-            pthread_t thr;
-            int e = pthread_create(&thr, NULL, worker, (void*)queue);
-            if (e!=0)
-            {
-                errx(EXIT_FAILURE, "pthread_create()");
-            }
-            
-        }
-        //Close sfd
-        close(sfd);
-        return 0;
+    {
+        int cfd;
+        struct sockaddr client_address;
+        socklen_t client_address_length = sizeof(struct sockaddr);
+        //Wait for connections by using the accept(2) function
+        cfd = accept(sfd, &client_address, &client_address_length);
+        if (cfd == -1)
+            err(EXIT_FAILURE, "main: accept()");
+        //Print any message showing that a connection is successful.
+        printf("New connection.\n");
+        //Print a message to the client
+        rewrite(cfd, "Connecting to server...\n", 26);
+        shared_queue_push(queue, cfd);
+    }
+    //Close sfd
+    close(sfd);
+    return 0;
    
 }

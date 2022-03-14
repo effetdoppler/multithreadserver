@@ -23,24 +23,24 @@ queue* queue_push(queue* start, int val)
 
 queue* queue_pop(queue* start, int *pval)
 {
-    queue* first = start;
-    queue * q = start->next;
-    *pval = q->val;
-    if (q->next != first)
-        start->next = q->next;
-    free(q);
-    if (!start)
+    if (start == NULL)
         return NULL;
-    return start;
+    queue* first = start;
+    queue* q = start->next;
+    *pval = q->val;
+    if (q->next != q)
+        first->next = q->next;
+    else
+        first = NULL;
+    free(q);
+    return first;
 }
 
 void queue_empty(queue** pstart)
 {
-    queue start = **pstart;
-    int *pval = NULL;
-    queue *res = queue_pop(&start, pval);
-    while(res)
-    {
-        res = queue_pop(&start, pval);
-    }
+    queue* q = *pstart;
+    int val;
+    while(q)
+        q = queue_pop(q, &val);
+    *pstart = NULL;
 }
